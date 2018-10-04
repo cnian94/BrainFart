@@ -104,6 +104,7 @@
     <Compile Include="Assets\Scripts\OneAndOneController.cs" />
     <Compile Include="Assets\Scripts\OneandOneManager.cs" />
     <Compile Include="Assets\Scripts\QuestionPanel.cs" />
+    <Compile Include="Assets\Scripts\SoundManager.cs" />
     <Compile Include="Assets\Scripts\Timer.cs" />
     <None Include="Assets\GameSparks\Plugins\GameSparksRT.xml" />
     <None Include="Assets\GameSparks\Plugins\Metro\GameSparksRT.xml" />

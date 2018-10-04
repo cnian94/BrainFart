@@ -34,12 +34,10 @@ public class OneandOneManager : MonoBehaviour
     public bool answered = false;
     public bool oppenentAnswered = false;
 
-    public int round;
 
 
     private void Awake()
     {
-        round = 1;
         questionIndex = 0;
         if (oneAndOne == null)
         {

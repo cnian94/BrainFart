@@ -30,12 +30,42 @@ public class OneAndOneController : MonoBehaviour
         platformPos.x = Screen.width / 2;
         platformPos.y = Screen.height / 2;
         platform = Instantiate(platform, platformPos, Quaternion.identity);
-        //Debug.Log("PLAYER 1 ANSWER:" + OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].answer);
-        //Debug.Log("PLAYER 2 ANSWER:" + OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].answer);
-        //Debug.Log("QUESTION INDEX: " + OneandOneManager.oneAndOne.questionIndex);
-        //Debug.Log("TRUE ANSWER:" + answer);
-        //Debug.Log("PLAYER 1 proximity:" + Mathf.Abs((float)(answer - OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].answer)));
-        //Debug.Log("PLAYER 2 proximity:" + Mathf.Abs((float)(answer - OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].answer)));
+
+        if(OneandOneManager.oneAndOne.questionIndex == 0)
+        {
+            Vector3 playerPos = platformPos;
+            playerPos.x -= 25;
+            playerPos.y += 75;
+            OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].pos = playerPos;
+            Debug.Log("FIRST QUESTION !! " + OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].pos);
+            PlayerOne = Instantiate(PlayerPrefab, playerPos, Quaternion.identity);
+            PlayerOne.gameObject.GetComponent<ParticleSystem>().Stop();
+            PlayerOne.name = OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].id;
+
+
+            playerPos.x += 50;
+            OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].pos = playerPos;
+            PlayerTwo = Instantiate(PlayerPrefab, playerPos, Quaternion.identity);
+            PlayerTwo.gameObject.GetComponent<ParticleSystem>().Stop();
+            Vector3 rotate = new Vector3(0, 180, 0);
+            PlayerTwo.transform.Rotate(rotate);
+            PlayerTwo.name = OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].id;
+        }
+
+        else
+        {
+            Debug.Log("NOT FIRST QUESTION !! " + OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].pos);
+            PlayerOne = Instantiate(PlayerPrefab, OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].pos, Quaternion.identity);
+            PlayerOne.name = OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].id;
+
+            PlayerTwo = Instantiate(PlayerPrefab, OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].pos, Quaternion.identity);
+            Vector3 rotate = new Vector3(0, 180, 0);
+            PlayerTwo.transform.Rotate(rotate);
+            PlayerTwo.name = OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].id;
+
+
+        }
+
         float answer = OneandOneManager.oneAndOne.questions.questions[OneandOneManager.oneAndOne.questionIndex].answer;
 
         float platformWidth = platform.GetComponent<Renderer>().bounds.size.x;
@@ -48,15 +78,44 @@ public class OneAndOneController : MonoBehaviour
             if (playerOne_proximity < playerTwo_proximity)
             {
                 Debug.Log("Player 1 will fart " + (playerTwo_proximity - playerOne_proximity) + " unit more !!");
+
+                Vector3 playerOneTargetPos = PlayerOne.transform.position;
+                var movement = (platformWidth * (playerTwo_proximity - playerOne_proximity)) / 100;
+                playerOneTargetPos.x += movement;
+
+                Vector3 playerTwoTargetPos = PlayerTwo.transform.position;
+                playerTwoTargetPos.x += movement;
+
+
+                StartCoroutine(MoveToPosition(PlayerOne.transform, playerOneTargetPos,4f));
+                StartCoroutine(MoveToPosition(PlayerTwo.transform, playerTwoTargetPos, 4f));
+
+
                 OneandOneManager.oneAndOne.questionIndex++;
-                StartCoroutine(WaitForFartAnimation());
+                //StartCoroutine(WaitForFartAnimation());
             }
 
             else
             {
                 Debug.Log("Player 2 will fart " + (playerOne_proximity - playerTwo_proximity) + " unit more !!");
+
+                Vector3 playerOneTargetPos = PlayerOne.transform.position;
+                var movement = (platformWidth * (playerOne_proximity - playerTwo_proximity)) / 100;
+                playerOneTargetPos.x -= movement;
+
+                Vector3 playerTwoTargetPos = PlayerTwo.transform.position;
+                playerTwoTargetPos.x -= movement;
+
+
+                StartCoroutine(MoveToPosition(PlayerOne.transform, playerOneTargetPos, 4f));
+                StartCoroutine(MoveToPosition(PlayerTwo.transform, playerTwoTargetPos, 4f));
+
+                OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[0].pos = playerOneTargetPos;
+                OneandOneManager.oneAndOne.GetSessionInfo().GetPlayerList()[1].pos = playerTwoTargetPos;
+
+
                 OneandOneManager.oneAndOne.questionIndex++;
-                StartCoroutine(WaitForFartAnimation());
+                //StartCoroutine(WaitForFartAnimation());
             }
         }
 
@@ -76,6 +135,28 @@ public class OneAndOneController : MonoBehaviour
                 StartCoroutine(WaitForFartAnimation());
             }
         }
+
+    }
+
+    public IEnumerator MoveToPosition(Transform transform, Vector3 position, float timeToMove)
+    {
+        var currentPos = transform.position;
+        var t = 0f;
+        transform.gameObject.GetComponent<ParticleSystem>().Play();
+        SoundManager.Instance.PlayMusic("FartSound");
+        while (t < 1)
+        {
+            t += Time.deltaTime / timeToMove;
+            transform.position = Vector3.Lerp(currentPos, position, t);
+            yield return null;
+        }
+    }
+
+    IEnumerator FartAnim(float percentage, float timeToFart)
+    {
+        SoundManager.Instance.PlayMusic("FartSound");
+        yield return new WaitForSeconds(timeToFart);
+        SoundManager.Instance.MusicSource.Stop();
 
     }
 

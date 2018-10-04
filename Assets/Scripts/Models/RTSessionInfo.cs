@@ -51,6 +51,8 @@ public class RTSessionInfo
         public int peerId;
         public bool isOnline;
         public float answer;
+
+        public Vector3 pos;
     }
 }
 
