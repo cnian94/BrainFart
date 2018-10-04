@@ -14,26 +14,33 @@ public class OneandOneManager : MonoBehaviour
 
     public static OneandOneManager oneAndOne = null;
 
+    public string myID;
+
     private GameSparksRTUnity gameSparksRTUnity;
-
-    private string challengeID;
-
-    public UnityEvent ChallengeStarted;
-
-    [System.Serializable]
-    public class OpponentAnsweredEvent : UnityEngine.Events.UnityEvent<string> { }
-
-
-    public OpponentAnsweredEvent answerEvent;
-
-    public QuestionList questions;
 
     private RTSessionInfo sessionInfo;
 
+    [System.Serializable]
+    public class OpponentAnsweredEvent : UnityEngine.Events.UnityEvent<float, string> { }
+    public OpponentAnsweredEvent answerEvent;
+
+    public UnityEvent FartTimeEvent;
+
+
+    public QuestionList questions;
+
+    public int questionIndex;
+
+    public bool answered = false;
+    public bool oppenentAnswered = false;
+
+    public int round;
+
+
     private void Awake()
     {
-        //ChallengeStartedMessage.Listener += OnChallengeStarted;
-
+        round = 1;
+        questionIndex = 0;
         if (oneAndOne == null)
         {
             oneAndOne = this;
@@ -48,7 +55,39 @@ public class OneandOneManager : MonoBehaviour
 
     private void Start()
     {
+        OneandOneManager.oneAndOne.answerEvent.AddListener(RecieveOpAnswer);
+    }
 
+    public RTSessionInfo.RTPlayer GetPlayerByID(string id)
+    {
+        var playerList = sessionInfo.GetPlayerList();
+        RTSessionInfo.RTPlayer player = null;
+        for (int i = 0; i < playerList.ToArray().Length; i++)
+        {
+            //Debug.Log(playerList[i].id + "  vs  " + id);
+            if (playerList[i].id == id)
+            {
+                player = playerList[i];
+                return player;
+            }
+        }
+        return player;
+    }
+
+    public RTSessionInfo.RTPlayer GetPlayerByPeerID(int peerID)
+    {
+        var playerList = sessionInfo.GetPlayerList();
+        RTSessionInfo.RTPlayer player = null;
+        for (int i = 0; i < playerList.ToArray().Length; i++)
+        {
+            Debug.Log(playerList[i].peerId + "  vs  " + peerID);
+            if (playerList[i].peerId == peerID)
+            {
+                player = playerList[i];
+                return player;
+            }
+        }
+        return player;
     }
 
     private void GetQuestionsSuccess(LogEventResponse response)
@@ -56,6 +95,7 @@ public class OneandOneManager : MonoBehaviour
         //Debug.Log("Questions: " + response.ScriptData.JSON);
         questions = QuestionList.CreateFromJSON(response.ScriptData.JSON);
         Debug.Log("Questions: " + questions.questions.Length);
+        SceneManager.LoadScene(2);
 
     }
 
@@ -73,45 +113,20 @@ public class OneandOneManager : MonoBehaviour
 
     }
 
-    public string GetChallengeID()
+    public void SendAnswers()
     {
-        return challengeID;
-    }
+        var playerList = sessionInfo.GetPlayerList();
 
-    public bool IsChallengeActive { get; private set; }
-
-    public string ChallengerName { get; private set; }
-
-    public string ChallengerId { get; private set; }
-
-    public string OpponentName { get; private set; }
-
-    public string OpponentId { get; private set; }
-
-    public int Round { get; private set; }
-
-    //public string CurrentPlayerName { get; private set; }
-
-    private void OnChallengeStarted(ChallengeStartedMessage message)
-    {
-        Debug.Log("MESSAGE:" + message.Challenge.Challenged);
-        IsChallengeActive = true;
-        challengeID = message.Challenge.ChallengeId;
-        ChallengerName = message.Challenge.Challenger.Name;
-        ChallengerId = message.Challenge.Challenger.Id;
-        GetQuestions();
-
-        using (IEnumerator<ChallengeStartedMessage._Challenge._PlayerDetail> enumer = message.Challenge.Challenged.GetEnumerator())
+        List<AnswerModel> answerList = new List<AnswerModel>();
+        for(int i=0;i<playerList.ToArray().Length; i++)
         {
-            if (enumer.MoveNext())
-            {
-                Debug.Log("ENUMER: " + enumer.Current.Name);
-                OpponentName = enumer.Current.Name;
-                OpponentId = enumer.Current.Id;
-            }
-            ChallengeStarted.Invoke();
+            AnswerModel answer = new AnswerModel(playerList[i].id, playerList[i].answer);
+            answerList.Add(answer);
         }
+
+        //LogEventRequest answer_request = new LogEventRequest();
     }
+
 
     public GameSparksRTUnity GetRTSession()
     {
@@ -122,6 +137,8 @@ public class OneandOneManager : MonoBehaviour
     {
         return sessionInfo;
     }
+
+
 
     #region Matchmaking Request
     /// <summary>
@@ -134,7 +151,8 @@ public class OneandOneManager : MonoBehaviour
         new GameSparks.Api.Requests.MatchmakingRequest()
             .SetMatchShortCode("1and1") // set the shortCode to be the same as the one we created in the first tutorial
             .SetSkill(0) // in this case we assume all players have skill level zero and we want anyone to be able to join so the skill level for the request is set to zero
-            .Send((response) => {
+            .Send((response) =>
+            {
                 if (response.HasErrors)
                 { // check for errors
                     Debug.LogError("GSM| MatchMaking Error \n" + response.Errors.JSON);
@@ -142,6 +160,8 @@ public class OneandOneManager : MonoBehaviour
             });
     }
     #endregion
+
+
 
     public void StartNewRTSession(RTSessionInfo _info)
     {
@@ -174,15 +194,18 @@ public class OneandOneManager : MonoBehaviour
 
     }
 
+
     private void OnPlayerConnectedToGame(int _peerId)
     {
         Debug.Log("GSM| Player Connected, " + _peerId);
     }
 
+
     private void OnPlayerDisconnected(int _peerId)
     {
         Debug.Log("GSM| Player Disconnected, " + _peerId);
     }
+
 
     private void OnRTReady(bool _isReady)
     {
@@ -190,7 +213,20 @@ public class OneandOneManager : MonoBehaviour
         {
             GetQuestions();
             Debug.Log("GSM| RT Session Connected...");
-            SceneManager.LoadScene(2);
+        }
+
+    }
+
+    void RecieveOpAnswer(float answer, string senderID)
+    {
+        Debug.Log("Player " + senderID + " Answer: " + answer);
+
+        oppenentAnswered = true;
+        GetPlayerByID(senderID).answer = answer;
+
+        if(answered)
+        {
+            FartTimeEvent.Invoke();
         }
 
     }
@@ -206,27 +242,14 @@ public class OneandOneManager : MonoBehaviour
             case 1:
                 Debug.Log("OPPONENT ANSWERED THE QUESTION !!");
                 Debug.Log("PACKET: " + _packet.Data);
-                answerEvent.Invoke(_packet.Data.GetString(1));
+                answerEvent.Invoke((float)_packet.Data.GetFloat(1), GetPlayerByPeerID(_packet.Sender).id);
                 break;
-                /*
+
             case 2:
-
-                GameController.Instance().UpdateOpponentTanks(_packet);
+                Debug.Log("OPPONENT NOT ANSWERED IN TIME !!");
+                //GameObject.Find("Q&APanel").gameObject.SetActive(false);
+                FartTimeEvent.Invoke();
                 break;
-
-            case 3:
-                GameController.Instance().InstantiateOpponentShells(_packet);
-                break;
-
-            case 4:
-                GameController.Instance().UpdateOpponentShells(_packet);
-                break;
-
-            case 5:
-                GameController.Instance().RegisterOpponentCollision(_packet);
-                break;*/
-
         }
     }
-
 }

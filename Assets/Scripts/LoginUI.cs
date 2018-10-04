@@ -78,6 +78,7 @@ public class LoginUI : MonoBehaviour
                         {
                             connectionInfoField.text = "GameSparks Authenticated With Facebook...";
                             Debug.Log("fbauth_response:" + fbauth_response.JSONString);
+                            OneandOneManager.oneAndOne.myID = fbauth_response.UserId;
                             userNameField.text = fbauth_response.DisplayName;
                             Invoke("LoadMenu", 3f);
                             //SceneManager.LoadScene(1);

@@ -8,7 +8,7 @@ using UnityEngine;
 public class Question {
 
     public string title;
-    public int answer;
+    public float answer;
     public int answered;
 }
 

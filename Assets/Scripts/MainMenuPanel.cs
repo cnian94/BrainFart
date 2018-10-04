@@ -26,12 +26,10 @@ public class MainMenuPanel : MonoBehaviour
 
         MatchNotFoundMessage.Listener += OnMatchNotFound;
         MatchFoundMessage.Listener += OnMatchFound;
-        //ChallengeStartedMessage.Listener += OnChallengeStarted;
     }
 
     void OnDestroy()
     {
-        //ChallengeStartedMessage.Listener -= OnChallengeStarted;
     }
 
     private void OnMatchmakingSuccess(MatchmakingResponse response)
@@ -71,11 +69,4 @@ public class MainMenuPanel : MonoBehaviour
         Debug.Log("Match Not Found !! ");
     }
 
-    private void OnChallengeStarted(ChallengeStartedMessage message)
-    {
-        Debug.Log("CHALLENGE STARTED !! " + message);
-        SceneManager.LoadScene(2);
-        //LoadingManager.Instance.LoadNextScene();
-
-    }
 }

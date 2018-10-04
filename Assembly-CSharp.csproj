@@ -61,7 +61,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\AnswerPanelCtrl.cs" />
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\ConsoleBase.cs" />
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\LogView.cs" />
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\MenuBase.cs" />
@@ -93,16 +92,19 @@
     <Compile Include="Assets\GameSparks\Platforms\WebGL\WebGLWebSocket.cs" />
     <Compile Include="Assets\GameSparks\Platforms\WebSocketController.cs" />
     <Compile Include="Assets\GameSparks\TestUI\GameSparksTestUI.cs" />
+    <Compile Include="Assets\Scripts\AnswerPanelCtrl.cs" />
     <Compile Include="Assets\Scripts\AspectRatioScript.cs" />
     <Compile Include="Assets\Scripts\CountDown.cs" />
     <Compile Include="Assets\Scripts\LoginUI.cs" />
     <Compile Include="Assets\Scripts\MainMenuPanel.cs" />
+    <Compile Include="Assets\Scripts\Models\AnswerModel.cs" />
     <Compile Include="Assets\Scripts\Models\QuestionModel.cs" />
+    <Compile Include="Assets\Scripts\Models\RTSessionInfo.cs" />
     <Compile Include="Assets\Scripts\MouseController.cs" />
     <Compile Include="Assets\Scripts\OneAndOneController.cs" />
     <Compile Include="Assets\Scripts\OneandOneManager.cs" />
-    <Compile Include="Assets\Scripts\OneAndOnePanel.cs" />
-    <Compile Include="Assets\Scripts\RTSessionInfo.cs" />
+    <Compile Include="Assets\Scripts\QuestionPanel.cs" />
+    <Compile Include="Assets\Scripts\Timer.cs" />
     <None Include="Assets\GameSparks\Plugins\GameSparksRT.xml" />
     <None Include="Assets\GameSparks\Plugins\Metro\GameSparksRT.xml" />
     <None Include="Assets\GameSparks\README.txt" />
